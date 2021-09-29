@@ -1,6 +1,6 @@
 const https = require("https");
 const axios = require("axios");
-const myApiKey = "Type your api key here"; // Type your api key here
+const myApiKey = "35a653c7958df3c22ed1e33ba24f58cd"; // Type your api key here
 
 function findCapitalWeather(country) {
   axios
