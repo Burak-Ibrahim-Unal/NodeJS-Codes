@@ -36,7 +36,7 @@ There are many great NodeJs tests on my GitHub and you have to run "npm init" co
 ### Built With
 
 This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-* [NodeJS 14LTS Edition](https://nodejs.org/en/)
+* [NodeJS 14 LTS Edition](https://nodejs.org/en/)
 * [Npm Axios](https://www.npmjs.com/package/axios)
 * [Public Web Apis]
 	(https://openweathermap.org/)
