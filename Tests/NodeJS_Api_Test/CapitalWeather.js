@@ -16,7 +16,7 @@ function findCapitalWeather(country) {
       const capitalOfCountry = Country.capital[0];
       //console.log(capitalOfCountry);
 
-      //axios.get("https://api.openweathermap.org/data/2.5/weather?q=ankara&appid=35a653c7958df3c22ed1e33ba24f58cd").then(res => {
+      //axios.get("https://api.openweathermap.org/data/2.5/weather?q=ankara&appid="+myApiKey+").then(res => {
       axios
         .get(
           "https://api.openweathermap.org/data/2.5/weather?q=" +
