@@ -31,7 +31,6 @@ const users = [
   //   email: cccc@gmail.com,
   //   country: Germany,
 
-
   // },
 ];
 
@@ -72,7 +71,7 @@ router.post("/register", (req, res) => {
   } else {
     User.findOne({ email: req.body.email }).then((user) => {
       if (user) {
-        return res.status(400).json({ email: " Email already exists!"}); //        return res.status(400) send(`${email} already exists!`)
+        return res.status(400).json({ email: " Email already exists!" }); //        return res.status(400) send(`${email} already exists!`)
       } else {
         const avatar = gravatar.url(req.body.email, {
           s: "200", // size
@@ -93,17 +92,16 @@ router.post("/register", (req, res) => {
           bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) throw err;
             newUser.password = hash;
-            newUser.save()
+            newUser
+              .save()
               .then((user) => res.json(user))
               .catch((err) => console.log(err));
-          })
-        })
+          });
+        });
       }
       users.push(newUser);
       res.send(newUser);
     });
-
-
   }
 });
 
@@ -153,6 +151,33 @@ router.delete("/delete/:id", (req, res) => {
   } else {
     res.status(404).send(`Invalid user with Id:${req.params.id}`);
   }
+});
+
+// @route http://localhost:3000/users/login
+// @desc Login Users route / Return json web token
+// @access public
+
+router.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findOne({ email }).then((user) => {
+    const { error } = ValidateUser(req.body.error);
+    if (error) {
+      res.status(400).send(error + "... Invalid inputs...");
+    } else {
+      if (!user) {
+        return res.status(404).json({ email: "User couldnt found" });
+      }
+      bcrypt.compare(password, user.password).then((isMatch) => {
+        if (isMatch) {
+          res.json({ message: "Login is successfull" });
+        } else {
+          return res.status(400).json({ password: "Wrong password!!!" });
+        }
+      });
+    }
+  });
 });
 
 function ValidateUser(user) {
