@@ -1,23 +1,38 @@
 const express = require("express");
 const router = express.Router();
 const joi = require("@hapi/joi");
+const gravatar = require("gravatar");
+const bcrypt = require("bcrypt");
 
+const User = require("../modules/User");
 const users = [
   {
-    id: 1,
-    name: "Burak",
+    name: "burak",
     age: 34,
+    email: "burak@burak.com",
+    country: "Turkey",
+    avatar: null,
+    password: "123456",
   },
-  {
-    id: 2,
-    name: "İbrahim",
-    age: 35,
-  },
-  {
-    id: 3,
-    name: "Ünal",
-    age: 33,
-  },
+  //   country: Turkey,
+  // },
+  // {
+  //   id: 2,
+  //   name: "İbrahim",
+  //   age: 35,
+  //   email: bbbb@gmail.com,
+  //   country: England,
+
+  // },
+  // {
+  //   id: 3,
+  //   name: "Ünal",
+  //   age: 33,
+  //   email: cccc@gmail.com,
+  //   country: Germany,
+
+
+  // },
 ];
 
 // @route http://localhost:3000/users
@@ -33,7 +48,6 @@ router.get("/", (req, res) => {
   }
 });
 
-
 // @route http://localhost:3000/users
 // @desc Tests Users route with id
 // @access public
@@ -46,23 +60,50 @@ router.get("/:id", (req, res) => {
   }
 });
 
-// @route http://localhost:3000/users
+// @route http://localhost:3000/users/register
 // @desc Register Users route
 // @access public
 
-router.post("/", (req, res) => {
-  const { error } = ValidateUser(req.body);
+router.post("/register", (req, res) => {
+  const { error } = ValidateUser(req.body.error);
 
   if (error) {
     res.status(400).send(error + "... Invalid inputs...");
   } else {
-    const newUser = {
-      id: users.length + 1,
-      name: req.body.name,
-      age: req.body.age,
-    };
-    users.push(newUser);
-    res.send(newUser);
+    User.findOne({ email: req.body.email }).then((user) => {
+      if (user) {
+        return res.status(400).json({ email: " Email already exists!"}); //        return res.status(400) send(`${email} already exists!`)
+      } else {
+        const avatar = gravatar.url(req.body.email, {
+          s: "200", // size
+          r: "pg", // rating
+          d: "mm", // default
+        });
+
+        const newUser = new User({
+          name: req.body.name,
+          age: req.body.age,
+          email: req.body.email,
+          country: req.body.country,
+          avatar,
+          password: req.body.password,
+        });
+
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
+            if (err) throw err;
+            newUser.password = hash;
+            newUser.save()
+              .then((user) => res.json(user))
+              .catch((err) => console.log(err));
+          })
+        })
+      }
+      users.push(newUser);
+      res.send(newUser);
+    });
+
+
   }
 });
 
@@ -70,7 +111,7 @@ router.post("/", (req, res) => {
 // @desc Update Users route
 // @access public
 
-router.put("/:id", (req, res) => {
+router.put("/update/:id", (req, res) => {
   const selectedUser = users.find(
     (user) => user.id === parseInt(req.params.id)
   );
@@ -101,7 +142,7 @@ router.put("/:id", (req, res) => {
 // @route http://localhost:3000/users/:id
 // @desc Delete Users route
 // @access public
-router.delete("/:id", (req, res) => {
+router.delete("/delete/:id", (req, res) => {
   const selectedUser = users.find(
     (user) => user.id === parseInt(req.params.id)
   );
@@ -113,7 +154,6 @@ router.delete("/:id", (req, res) => {
     res.status(404).send(`Invalid user with Id:${req.params.id}`);
   }
 });
-
 
 function ValidateUser(user) {
   const rules = joi.object({

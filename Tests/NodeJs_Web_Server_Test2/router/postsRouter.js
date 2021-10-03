@@ -5,17 +5,17 @@ const joi = require("@hapi/joi");
 const posts = [
   {
     id: 1,
-    name: "Burak",
+    name: "Burak posts",
     age: 34,
   },
   {
     id: 2,
-    name: "İbrahim",
+    name: "İbrahim posts",
     age: 35,
   },
   {
     id: 3,
-    name: "Ünal",
+    name: "Ünal posts",
     age: 33,
   },
 ];
