@@ -3,6 +3,8 @@ const router = express.Router();
 const joi = require("@hapi/joi");
 const gravatar = require("gravatar");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const keys = require("../config/keys");
 
 const User = require("../modules/User");
 const users = [
@@ -171,7 +173,20 @@ router.post("/login", (req, res) => {
       }
       bcrypt.compare(password, user.password).then((isMatch) => {
         if (isMatch) {
-          res.json({ message: "Login is successfull" });
+          const payload = { id: user.id, name: user.name, avatar: user.avatar }; //Jwt payload
+
+          jwt.sign(
+            payload,
+            keys.secretOrKey,
+            { expiresIn: 3600 },
+            (err, token) => {
+              res.json({
+                success: true,
+                token: "Bearer " + token,
+              });
+            }
+          );
+          // res.json({ message: "Login  is successfull" });
         } else {
           return res.status(400).json({ password: "Wrong password!!!" });
         }
