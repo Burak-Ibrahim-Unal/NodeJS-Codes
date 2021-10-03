@@ -1,12 +1,14 @@
 /* #region  Modules Imports  */
 const express = require("express");
 const mongoose = require("mongoose");
+const passport = require("passport");
 
 const profileRouter = require("./router/profileRouter");
 const postsRouter = require("./router/postsRouter");
 const userRouter = require("./router/userRouter");
 const mainRouter = require("./router/mainRouter");
 const errorRouter = require("./router/errorRouter");
+
 /* #endregion */
 
 /* #region  Express package settings */
@@ -14,6 +16,8 @@ const myApp = express();
 myApp.use(express.json());
 myApp.use(express.urlencoded({ extended: true }));
 myApp.use(express.static("public"));
+
+
 /* #endregion */
 
 /* #region  Db Connection Settings */
@@ -28,6 +32,12 @@ mongoose
 /* #endregion */
 
 /* #region  App Router Settings */
+//Passport
+myApp.use(passport.initialize());
+
+//Passport config
+require("./config/passport")(passport);
+
 myApp.use("/users", userRouter);
 myApp.use("/posts", postsRouter);
 myApp.use("/profiles", profileRouter);

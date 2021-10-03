@@ -5,8 +5,10 @@ const gravatar = require("gravatar");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const keys = require("../config/keys");
-
 const User = require("../modules/User");
+const passport = require("passport");
+
+/* #region  Test User Array */
 const users = [
   {
     name: "burak",
@@ -35,6 +37,7 @@ const users = [
 
   // },
 ];
+/* #endregion */
 
 // @route http://localhost:3000/users
 // @desc Tests Users route
@@ -49,17 +52,7 @@ router.get("/", (req, res) => {
   }
 });
 
-// @route http://localhost:3000/users
-// @desc Tests Users route with id
-// @access public
-router.get("/:id", (req, res) => {
-  const selectedUser = users.find((user) => user.id == parseInt(req.params.id));
-  if (selectedUser) {
-    res.send(selectedUser);
-  } else {
-    res.status(404).send("Invalid user with id:" + req.params.id);
-  }
-});
+
 
 // @route http://localhost:3000/users/register
 // @desc Register Users route
@@ -107,57 +100,18 @@ router.post("/register", (req, res) => {
   }
 });
 
-// @route http://localhost:3000/users
-// @desc Update Users route
-// @access public
+// @route http://localhost:3000/users/current
+// @desc Return current user
+// @access private
+router.get("/current", passport.authenticate("jwt", { session: false }),(req,res) => {
+  res.json({
+    id: req.user.id,
+    name:req.user.name,
+    email:req.user.email,
+    country:req.user.country,
 
-router.put("/update/:id", (req, res) => {
-  const selectedUser = users.find(
-    (user) => user.id === parseInt(req.params.id)
-  );
-  if (!selectedUser) {
-    return res.status(404).send(`Invalid id:${req.params.id}`);
-  }
-
-  //V1
-  /* #region  This code works great. V2 is the same...Difference is string destruction... */
-  // const result = ValidateUser(req.body);
-  //if (result.error) {
-  //   res.status(400).send(result.error + "... Invalid inputs...");
-  //   const result = ValidateUser(req.body);
-  // }
-  /* #endregion */
-
-  //V2
-  const { error } = ValidateUser(req.body);
-  if (error) {
-    res.status(400).send(error.details[0].message + "... Invalid inputs...");
-  } else {
-    (selectedUser.name = req.body.name),
-      (selectedUser.age = req.body.age),
-      res.send(selectedUser);
-  }
+  });
 });
-
-// @route http://localhost:3000/users/:id
-// @desc Delete Users route
-// @access public
-router.delete("/delete/:id", (req, res) => {
-  const selectedUser = users.find(
-    (user) => user.id === parseInt(req.params.id)
-  );
-  if (selectedUser) {
-    const selectedUserId = users.indexOf(selectedUser);
-    users.splice(selectedUserId, 1);
-    res.send(selectedUser);
-  } else {
-    res.status(404).send(`Invalid user with Id:${req.params.id}`);
-  }
-});
-
-// @route http://localhost:3000/users/login
-// @desc Login Users route / Return json web token
-// @access public
 
 router.post("/login", (req, res) => {
   const email = req.body.email;
@@ -194,6 +148,74 @@ router.post("/login", (req, res) => {
     }
   });
 });
+
+// @route http://localhost:3000/users
+// @desc Tests Users route with id
+// @access public
+router.get("/:id", (req, res) => {
+  const selectedUser = users.find((user) => user.id == parseInt(req.params.id));
+  if (selectedUser) {
+    res.send(selectedUser);
+  } else {
+    res.status(404).send("Getting user is failed.Invalid user id:" + req.params.id);
+  }
+});
+
+// @route http://localhost:3000/users
+// @desc Update Users route
+// @access public
+
+router.put("/update/:id", (req, res) => {
+  const selectedUser = users.find(
+    (user) => user.id === parseInt(req.params.id)
+  );
+  if (!selectedUser) {
+    return res.status(404).send(`Update failed.Invalid id :${req.params.id}`);
+  }
+
+  //V1
+  /* #region  This code works great. V2 is the same...Difference is string destruction... */
+  // const result = ValidateUser(req.body);
+  //if (result.error) {
+  //   res.status(400).send(result.error + "... Invalid inputs...");
+  //   const result = ValidateUser(req.body);
+  // }
+  /* #endregion */
+
+  //V2
+  const { error } = ValidateUser(req.body);
+  if (error) {
+    res.status(400).send(error.details[0].message + "... Invalid inputs...");
+  } else {
+    (selectedUser.name = req.body.name),
+      (selectedUser.age = req.body.age),
+      res.send(selectedUser);
+  }
+});
+
+// @route http://localhost:3000/users/:id
+// @desc Delete Users route
+// @access public
+router.delete("/delete/:id", (req, res) => {
+  const selectedUser = users.find(
+    (user) => user.id === parseInt(req.params.id)
+  );
+  if (selectedUser) {
+    const selectedUserId = users.indexOf(selectedUser);
+    users.splice(selectedUserId, 1);
+    res.send(selectedUser);
+  } else {
+    res.status(404).send(`Delete failed.Invalid user with Id:${req.params.id}`);
+  }
+});
+
+// @route http://localhost:3000/users/login
+// @desc Login Users route / Return json web token
+// @access public
+
+
+
+
 
 function ValidateUser(user) {
   const rules = joi.object({
